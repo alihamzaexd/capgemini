@@ -1,5 +1,23 @@
 <?php
 //  Author: Ali Hamza
+session_start();
+
+// redirects users to login page if user is not of type customer
+if($_SESSION['userType'] != 'customer')
+{
+  header("Location: index.php");
+}
+
+// including files with database configuration and function
+require_once(dirname(__FILE__).'/db_connect.php');
+require_once(dirname(__FILE__).'/databaseFunctions.php');
+
+// building database connection
+$connectionClass = new DB_CONNECT();
+$conn  = $connectionClass->connect();
+
+// getting user personal information to be used in this page
+getUserPersonalDetails();
 ?>
 
 <!DOCTYPE html>
@@ -63,7 +81,8 @@ Smartphone Compatible web template, free webdesigns for Nokia, Samsung, LG, Sony
 						<nav class="cl-effect-1" id="cl-effect-1">
 							<ul class="nav navbar-nav">
 								<li class="active"><a href="customer.php" data-hover="Home">Home</a></li>
-								<li ><a href="" data-hover="Home">My Basket</a></li>
+								<li ><a href="serviceCatalougeCustomer.php" data-hover="Home">Services Catalogue</a></li>
+								<li ><a href="basketCustomer.php" data-hover="Home">My Basket <?php echo "| ";echo getBasketTotalCost($_SESSION['userId'])." Credits";?></a></li>
 								<li class="dropdown menu__item">
 									<a href="#" class="dropdown-toggle menu__link active" data-toggle="dropdown" data-hover="Pages" role="button" aria-haspopup="true"
 									    aria-expanded="false">Account<span class="caret"></span></a>
@@ -72,7 +91,7 @@ Smartphone Compatible web template, free webdesigns for Nokia, Samsung, LG, Sony
 										<li><a href="resetPasswordCustomer.php">Reset Password</a></li>
 									</ul>
 								</li>
-								<li><a href="contact.html" data-hover="Contact">Logout</a></li>
+								<li><a href="logout.php" data-hover="Contact">Logout</a></li>
 							</ul>
 						</nav>
 					</div>
@@ -85,14 +104,14 @@ Smartphone Compatible web template, free webdesigns for Nokia, Samsung, LG, Sony
 		    <!--footer-->
 	        <div class="contact-middle"  style="background:rgba(0, 0, 0, 0.8);">
 	 
-				<h3 style="color:#ffa500;" align="center">Welcome <?php echo "Ali Hamza!";?></h3><br>
+				<h3 style="color:#ffa500;" align="center">Welcome <?php if(isset($_SESSION['firstName'])){ echo $_SESSION['firstName']." ".$_SESSION['lastName']; }?>!</h3><br>
 				<h2>Account Details:</h2>
 				<hr>
-				<p>First Name:</p> <p style="margin-left:10%">Ali</p>
-				<p>Last Name:</p>  <p style="margin-left:10%">Hamza</p>
-				<p>Email:</p>  <p style="margin-left:10%">hamzasgd35@gmail.com</p>
-				<p>Company:</p>  <p style="margin-left:10%">Excellence Delivered Pvt.</p>
-				<p>Location:</p>  <p style="margin-left:10%">Jail Road, Gulberg Lahore</p>
+				<p>First Name:</p> <p style="margin-left:10%"><?php if(isset($_SESSION['firstName'])){ echo $_SESSION['firstName'];}?></p>
+				<p>Last Name:</p>  <p style="margin-left:10%"><?php if(isset($_SESSION['lastName'])){ echo $_SESSION['lastName'];}else{echo "---Please set---";}?></p>
+				<p>Email:</p>  <p style="margin-left:10%"><?php if(isset($_SESSION['email'])){ echo $_SESSION['email'];}?></p>
+				<p>Company:</p>  <p style="margin-left:10%"><?php if(isset($_SESSION['companyName'])){ echo $_SESSION['companyName'];}?></p>
+				<p>Location:</p>  <p style="margin-left:10%"><?php if(isset($_SESSION['location'])){ echo $_SESSION['location'];}else{echo "---Please set---";}?></p>
              
 	        </div>
 			<br><br>
@@ -113,31 +132,7 @@ Smartphone Compatible web template, free webdesigns for Nokia, Samsung, LG, Sony
 						  </tr>
 						</thead>
 						<tbody>
-						  <tr>
-							<td>1</td>
-							<td>06-01-2018</td>
-							<td>12-03-2018</td>
-							<td>1234$</td>
-							<th>Rejected</th>
-							<td><button class="btn btn-info" onclick="showQuoteDetails(1)">Details</button></td>
-						  </tr>
-						  <tr>
-							<td>2</td>
-							<td>06-01-2016</td>
-							<td>12-03-2018</td>
-							<td>4453$</td>
-							<th>Approved</th>
-							<td><button class="btn btn-info" onclick="showQuoteDetails(1)">Details</button></td>
-						  </tr>
-						  <tr>
-							<td>3</td>
-							<td>06-01-2017</td>
-							<td>12-03-2018</td>
-							<td>2000$</td>
-							<th>Approved</th>
-							<td><button class="btn btn-info" onclick="showQuoteDetails(1)">Details</button></td>
-						  </tr>
-						  
+						    <?php getQuotes($_SESSION['userId']); ?>
 						</tbody>
 					</table>
 				</div>

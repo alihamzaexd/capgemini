@@ -2,7 +2,6 @@
 //  Author: Ali Hamza
 session_start();
 
-$_SESSION['updateTargetUserId']=null;
 // redirects users to login page if user is not of type customer
 if($_SESSION['userType'] != 'admin')
 {
@@ -17,10 +16,6 @@ require_once(dirname(__FILE__).'/databaseFunctions.php');
 $connectionClass = new DB_CONNECT();
 $conn  = $connectionClass->connect();
 
-// get details of the user to be edited
-if(isset($_POST['updateTargetUserId'])){
-	getSpecificUserDetails($_POST['updateTargetUserId']);
-}
 ?>
 
 <!DOCTYPE html>
@@ -30,7 +25,7 @@ if(isset($_POST['updateTargetUserId'])){
     <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
 	<script src="https://cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js"></script>
 
-	<title>Edit profile</title>
+	<title>Edit Catalogue</title>
 	<!-- Meta-tags -->
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -83,10 +78,10 @@ Smartphone Compatible web template, free webdesigns for Nokia, Samsung, LG, Sony
 					<div class="collapse navbar-collapse nav-wil" id="bs-example-navbar-collapse-1">
 						<nav class="cl-effect-1" id="cl-effect-1">
 							<ul class="nav navbar-nav">
-								<li><a href="admin.php" data-hover="Home">Home</a></li>
-								<li ><a href="editCatalogAdmin.php" data-hover="Home">Catalogue</a></li>
+								<li ><a href="admin.php" data-hover="Home">Home</a></li>
+								<li class="active"><a href="" data-hover="Home">Catalogue</a></li>
 								<li ><a href="manageUsers.php" data-hover="Home">Manage Users</a></li>
-								<li class="dropdown menu__item active">
+								<li class="dropdown menu__item">
 									<a href="#" class="dropdown-toggle menu__link active" data-toggle="dropdown" data-hover="Pages" role="button" aria-haspopup="true"
 									    aria-expanded="false">Account<span class="caret"></span></a>
 									<ul class="dropdown-menu">
@@ -116,51 +111,79 @@ Smartphone Compatible web template, free webdesigns for Nokia, Samsung, LG, Sony
 					<!-- error messages are shown here. -->
 				</div>
 			</div>	
-					<h3 style="color:#ffa500;" align="center"> Edit User Profile</h3><br>
+					<h3 style="color:#ffa500;" align="center"> Add New Item</h3><br>
 					<form action="" method="post" >
 					
 						<div class="form-fields-agileinfo">
-							<p>Last Name</p>
-							<input type="text" id="editLastName" name="editLastName" value="<?php if(isset($_SESSION['editUserLastName'])){echo $_SESSION['editUserLastName'];}?>" />
+							<p>Title</p>
+							<input type="text" id="itemTitle" name="itemTitle" required ="required"/>
 						</div>
 						<div class="form-fields-agileinfo">
-							<p>Role</p>
-							<input type="text" id="editRole" name="editRole" value="<?php if(isset($_SESSION['editUserRole'])){echo $_SESSION['editUserRole'];}?>" />
+							<p>Description</p>
+							<input type="text" id="itemDescription" name="itemDescription" required ="required"/>
 						</div>
 						<div class="form-fields-agileinfo">
-							<p>Location</p>
-							<input type="text" id="editLocation" name="editLocation" value="<?php if(isset($_SESSION['editUserLocation'])){echo $_SESSION['editUserLocation'];}?>" />
+							<p>Value</p>
+							<input type="number" id="itemValue" name="itemValue"  required ="required"/>
 						</div>
 						<br>
-						<p>User Type</p>
-						<select class="form-control" id="editUserType" name="editUserType">
-							<option type="text" value="admin" 
-							    <?php if(isset($_SESSION['editUserType']) && $_SESSION['editUserType']=="admin"){echo "Selected";}?> 
-							>Admin</option>
-							<option type="text" value="customer"  
-							    <?php if(isset($_SESSION['editUserType']) && $_SESSION['editUserType']=="customer"){echo "Selected";}?>
-							>Customer</option>
+						<p>Item Type</p>
+						<select class="form-control" id="itemType" name="itemType">
+							<option type="text" value="Test Artifacts" >Test Artifacts</option>
+							<option type="text" value="Onshore Resources">Onshore Resources</option>
+							<option type="text" value="Offshore Resources">Offshore Resources</option>
+							<option type="text" value="Tools">Tools</option>
+							<option type="text" value="Non-Test">Non-Test</option>
+							<option type="text" value="Miscellaneous">Miscellaneous</option>
 						</select>
-						<input type="submit" value="Update" name="Update">
+						<input type="submit" value="Add Item" name="addItem">
 					</form>
+			</div>		
+	    </div>
+		<div class="container">
+		 <br> <br> <br>
+			<!--footer-->
+	        <div class="contact-middle" align="center" style="background:rgba(0, 0, 0, 0.8);">
+	 
+				<h3 style="color:#ffa500;">Edit Catalogue</h3><br>
+				<div class="table-responsive">
+					<table class="table" id="example2" style="color:white; !important">
+						<thead>
+						  <tr>
+							<th><p>Title</p></th>
+							<th><p>Description</p></th>
+							<th><p>Value</p></th>
+							<th><p>Type</p></th>
+							<th><p>Delete</p></th>
+						  </tr>
+						</thead>
+						<tbody>
+						 <?php getAllItems();?>
+						</tbody>
+					</table>
+				</div>
 			</div>
 			<br><br><br>
-			
+			<!-- table 2-->
+	    </div>
 	</div>
 
 	
 	<!--//Slider-->
 	<!--//Header-->
+<script>
+$(document).ready(function(){
+    $('#example2').DataTable();
+});
+</script>
 
 <?php
     //including footer HTML
     include( __DIR__ . '/footer.php');
 	
-	// account details update section
-    if(isset($_POST['Update'])){
+	// add new item
+    if(isset($_POST['addItem'])){
 		// calling function to update selected user details
-		updateSpecificUserDetails($_SESSION['editUserId']);	
+		addItem();	
 	}
 ?>	
-				
-			

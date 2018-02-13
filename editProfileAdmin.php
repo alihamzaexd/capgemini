@@ -1,5 +1,23 @@
 <?php
 //  Author: Ali Hamza
+session_start();
+
+// redirects users to login page if user is not of type customer
+if($_SESSION['userType'] != 'admin')
+{
+  header("Location: index.php");
+}
+
+// including files with database configuration and function
+require_once(dirname(__FILE__).'/db_connect.php');
+require_once(dirname(__FILE__).'/databaseFunctions.php');
+
+// building database connection
+$connectionClass = new DB_CONNECT();
+$conn  = $connectionClass->connect();
+
+// getting user personal information to be used in this page
+getUserPersonalDetails();
 ?>
 
 <!DOCTYPE html>
@@ -63,7 +81,7 @@ Smartphone Compatible web template, free webdesigns for Nokia, Samsung, LG, Sony
 						<nav class="cl-effect-1" id="cl-effect-1">
 							<ul class="nav navbar-nav">
 								<li><a href="admin.php" data-hover="Home">Home</a></li>
-								<li ><a href="" data-hover="Home">Catalogue</a></li>
+								<li ><a href="editCatalogAdmin.php" data-hover="Home">Catalogue</a></li>
 								<li ><a href="manageUsers.php" data-hover="Home">Manage Users</a></li>
 								<li class="dropdown menu__item active">
 									<a href="#" class="dropdown-toggle menu__link active" data-toggle="dropdown" data-hover="Pages" role="button" aria-haspopup="true"
@@ -73,7 +91,7 @@ Smartphone Compatible web template, free webdesigns for Nokia, Samsung, LG, Sony
 										<li><a href="resetPasswordAdmin.php">Reset Password</a></li>
 									</ul>
 								</li>
-								<li><a href="contact.html" data-hover="Contact">Logout</a></li>
+								<li><a href="logout.php" data-hover="Contact">Logout</a></li>
 							</ul>
 						</nav>
 					</div>
@@ -85,21 +103,31 @@ Smartphone Compatible web template, free webdesigns for Nokia, Samsung, LG, Sony
 		 <br> <br> <br>
 		    <!--footer-->
 	        <div class="contact-middle" style="background:rgba(0, 0, 0, 0.8); max-width:50%;">
+			<div id="successDiv" class="alert alert-success alert-dismissible" role="alert" style="display:none; font-size:20px; " >
+				<div id="successMessage" >
+					<!-- success messages are shown here. -->
+				</div>
+			</div>
+			<div id="errorDiv" class="alert alert-danger alert-dismissible" role="alert" style="display:none; font-size:20px;">
+				<div id="errorMessage" style="padding-left:5%;">
+					<!-- error messages are shown here. -->
+				</div>
+			</div>	
 					<h3 style="color:#ffa500;" align="center"> Edit Profile</h3><br>
-					<form action="#" method="post" >
+					<form action="" method="post" >
 						<div class="form-fields-agileinfo">
 							<p>Last Name</p>
-							<input type="text" id="lastName" value="" />
+							<input type="text" id="lastName" name="lastName" value="<?php if(isset($_SESSION['lastName'])){echo $_SESSION['lastName'];}?>" />
 						</div>
 						<div class="form-fields-agileinfo">
 							<p>Role</p>
-							<input type="text" id="email" value="" />
+							<input type="text" id="role" name="role" value="<?php if(isset($_SESSION['role'])){echo $_SESSION['role'];}?>" />
 						</div>
 						<div class="form-fields-agileinfo">
 							<p>Location</p>
-							<input type="text" id="location" value="" />
+							<input type="text" id="location" name="location" value="<?php if(isset($_SESSION['location'])){echo $_SESSION['location'];}?>" />
 						</div>
-						<input type="submit" value="Update">
+						<input type="submit" name="Update" value="Update">
 					</form>
 			</div>
 			<br><br><br>
@@ -113,6 +141,12 @@ Smartphone Compatible web template, free webdesigns for Nokia, Samsung, LG, Sony
 <?php
     //including footer HTML
     include( __DIR__ . '/footer.php');
+	
+	// account details update section
+    if(isset($_POST['Update'])){
+		// calling function to update logged in user details
+		updateUserPersonalDetails();	
+	}
 ?>	
 				
 			

@@ -1,20 +1,26 @@
 <?php
 session_start();
 
-require_once(dirname(__FILE__).'/db_connect.php');
-// building database connection
-	$connectionClass = new DB_CONNECT();
-	$conn  = $connectionClass->connect();
-	if(isset($_POST['Signup'])){
-	$firstName= $_POST['firstName'];
-	$lastName= $_POST['lastName'];
-	$email= $_POST['email'];
-	$companyName= $_POST['company'];
-	$password= $_POST['password'];
-	$confirmPassword= $_POST['confirmPassword'];
-	echo $firstName." | ".$lastName." | ".$email." | ".$companyName." | ".$password." | ".$confirmPassword;
-	
+if(isset($_SESSION['userType']))
+{
+    if($_SESSION['userType'] == 'customer')
+	{
+	  header("Location: customer.php");
 	}
+	if($_SESSION['userType'] == 'admin')
+	{
+	  header("Location: admin.php");
+	}
+} // if for userType ends
+
+
+// including file with database configuration
+require_once(dirname(__FILE__).'/db_connect.php');
+require_once(dirname(__FILE__).'/databaseFunctions.php');
+
+// building database connection
+$connectionClass = new DB_CONNECT();
+$conn  = $connectionClass->connect();
 
 ?>
 
@@ -76,7 +82,20 @@ Smartphone Compatible web template, free webdesigns for Nokia, Samsung, LG, Sony
 			</div>
 		</div>
 		<div class="contact-agile" id="contact">
+		
 		<div class="container">
+		
+			<div id="successDiv" class="alert alert-success alert-dismissible" role="alert" style="display:none; font-size:20px; " >
+				<div id="successMessage" >
+					<!-- success messages are shown here. -->
+				</div>
+			</div>
+			<div id="errorDiv" class="alert alert-danger alert-dismissible" role="alert" style="display:none; font-size:20px;">
+				<div id="errorMessage" style="padding-left:5%;">
+					<!-- error messages are shown here. -->
+				</div>
+			</div>	
+		
 			<div class="contact-eql">
 				<div class="contact-middle" style="background:rgba(0, 0, 0, 0.8);">
 					<h4>Login</h4>
@@ -93,6 +112,7 @@ Smartphone Compatible web template, free webdesigns for Nokia, Samsung, LG, Sony
 					</form>
 				</div>
 				<div class="contact-middle" style="background:rgba(0, 0, 0, 0.8);">
+				    
 					<h4>Signup</h4>
 					<form action="" method="post">
 						<div class="form-fields-agileinfo">
@@ -133,4 +153,20 @@ Smartphone Compatible web template, free webdesigns for Nokia, Samsung, LG, Sony
 <?php
     //including footer HTML
     include( __DIR__ . '/footer.php');
+	
+	// account creation/signup
+    if(isset($_POST['Signup'])){
+		// calling function to validate signup
+		$signupValidation = validateSignup();
+		if($signupValidation == true)
+			{
+			addUser();	
+			}
+	}
+	//login function
+	if(isset($_POST['Login'])){
+		login();	
+	}
+	
+	
 ?>	

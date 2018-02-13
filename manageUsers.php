@@ -1,6 +1,21 @@
 <?php
 //  Author: Ali Hamza
+session_start();
 
+$_SESSION['updateTargetUserId']=null;
+// redirects users to login page if user is not of type customer
+if($_SESSION['userType'] != 'admin')
+{
+  header("Location: index.php");
+}
+
+// including files with database configuration and function
+require_once(dirname(__FILE__).'/db_connect.php');
+require_once(dirname(__FILE__).'/databaseFunctions.php');
+
+// building database connection
+$connectionClass = new DB_CONNECT();
+$conn  = $connectionClass->connect();
 
 ?>
 
@@ -65,7 +80,7 @@ Smartphone Compatible web template, free webdesigns for Nokia, Samsung, LG, Sony
 						<nav class="cl-effect-1" id="cl-effect-1">
 							<ul class="nav navbar-nav">
 								<li ><a href="admin.php" data-hover="Home">Home</a></li>
-								<li ><a href="" data-hover="Home">Catalogue</a></li>
+								<li ><a href="editCatalogAdmin.php" data-hover="Home">Catalogue</a></li>
 								<li class="active"><a href="" data-hover="Home">Manage Users</a></li>
 								<li class="dropdown menu__item">
 									<a href="#" class="dropdown-toggle menu__link active" data-toggle="dropdown" data-hover="Pages" role="button" aria-haspopup="true"
@@ -75,7 +90,7 @@ Smartphone Compatible web template, free webdesigns for Nokia, Samsung, LG, Sony
 										<li><a href="resetPasswordAdmin.php">Reset Password</a></li>
 									</ul>
 								</li>
-								<li><a href="contact.html" data-hover="Contact">Logout</a></li>
+								<li><a href="logout.php" data-hover="Contact">Logout</a></li>
 							</ul>
 						</nav>
 					</div>
@@ -102,22 +117,7 @@ Smartphone Compatible web template, free webdesigns for Nokia, Samsung, LG, Sony
 						  </tr>
 						</thead>
 						<tbody>
-						  <tr>
-							<td>1</td>
-							<td>Ali</td>
-							<td>Hamza</td>
-							<td>hamzasg35@gmail.com</td>
-							<td>Customer</td>
-							<td><button class="btn btn-success">edit</button></td>
-						  </tr>
-						  <tr>
-							<td>1</td>
-							<td>Hasnain</td>
-							<td>Amjabd</td>
-							<td>hamjad5@gmail.com</td>
-							<td>Admin</td>
-							<td><button class="btn btn-success">edit</button></td>
-						  </tr>
+						 <?php getAllUsers();?>
 						</tbody>
 					</table>
 				</div>

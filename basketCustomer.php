@@ -2,9 +2,8 @@
 //  Author: Ali Hamza
 session_start();
 
-$_SESSION['updateTargetUserId']=null;
 // redirects users to login page if user is not of type customer
-if($_SESSION['userType'] != 'admin')
+if($_SESSION['userType'] != 'customer')
 {
   header("Location: index.php");
 }
@@ -17,10 +16,6 @@ require_once(dirname(__FILE__).'/databaseFunctions.php');
 $connectionClass = new DB_CONNECT();
 $conn  = $connectionClass->connect();
 
-// get details of the user to be edited
-if(isset($_POST['updateTargetUserId'])){
-	getSpecificUserDetails($_POST['updateTargetUserId']);
-}
 ?>
 
 <!DOCTYPE html>
@@ -30,7 +25,7 @@ if(isset($_POST['updateTargetUserId'])){
     <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
 	<script src="https://cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js"></script>
 
-	<title>Edit profile</title>
+	<title>Home</title>
 	<!-- Meta-tags -->
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -75,7 +70,7 @@ Smartphone Compatible web template, free webdesigns for Nokia, Samsung, LG, Sony
 					<span class="icon-bar"></span>
 				  </button>
 						<div class="logo">
-							<h1><a class="navbar-brand" href="admin.php"><span>C</span>apgemini</a></h1>
+							<h1><a class="navbar-brand" href="customer.php"><span>C</span>apgemini</a></h1>
 						</div>
 					</div>
 
@@ -83,15 +78,15 @@ Smartphone Compatible web template, free webdesigns for Nokia, Samsung, LG, Sony
 					<div class="collapse navbar-collapse nav-wil" id="bs-example-navbar-collapse-1">
 						<nav class="cl-effect-1" id="cl-effect-1">
 							<ul class="nav navbar-nav">
-								<li><a href="admin.php" data-hover="Home">Home</a></li>
-								<li ><a href="editCatalogAdmin.php" data-hover="Home">Catalogue</a></li>
-								<li ><a href="manageUsers.php" data-hover="Home">Manage Users</a></li>
-								<li class="dropdown menu__item active">
+								<li><a href="customer.php" data-hover="Home">Home</a></li>
+								<li ><a href="serviceCatalougeCustomer.php" data-hover="Home">Services Catalogue</a></li>
+								<li class="active"><a href="basketCustomer.php" data-hover="Home">My Basket <?php echo "| ";echo getBasketTotalCost($_SESSION['userId'])." Credits";?></a></li>
+								<li class="dropdown menu__item">
 									<a href="#" class="dropdown-toggle menu__link active" data-toggle="dropdown" data-hover="Pages" role="button" aria-haspopup="true"
 									    aria-expanded="false">Account<span class="caret"></span></a>
 									<ul class="dropdown-menu">
-										<li><a href="editProfileAdmin.php">Edit Profile</a></li>
-										<li><a href="resetPasswordAdmin.php">Reset Password</a></li>
+										<li><a href="editProfileCustomer.php">Edit Profile</a></li>
+										<li><a href="resetPasswordCustomer.php">Reset Password</a></li>
 									</ul>
 								</li>
 								<li><a href="logout.php" data-hover="Contact">Logout</a></li>
@@ -102,48 +97,40 @@ Smartphone Compatible web template, free webdesigns for Nokia, Samsung, LG, Sony
 				</nav>
 			</div>
 		</div>
-		<div class="container" style="margin-left:30%">
-		 <br> <br> <br>
-		    <!--footer-->
-	        <div class="contact-middle" style="background:rgba(0, 0, 0, 0.8); max-width:50%;">
-			<div id="successDiv" class="alert alert-success alert-dismissible" role="alert" style="display:none; font-size:20px; " >
-				<div id="successMessage" >
-					<!-- success messages are shown here. -->
+		<div class="container">
+			<br><br><br>
+			<!--footer-->
+	        <div class="contact-middle" align="center" style="background:rgba(0, 0, 0, 0.8);">
+	 
+				<h3 style="color:#ffa500;">My Basket</h3><br>
+				<div class="table-responsive">
+					<table class="table" id="example1" style="color:white; !important">
+						<thead>
+						  <tr>
+							<th><p>Title</p></th>
+							<th><p>Description</p></th>
+							<th><p>Value</p></th>
+							<th><p>Type</p></th>
+							<th><p>Quantity</p></th>
+							<th><p>Total Value</p></th>
+							<th><p>Remove Item</p></th>
+						  </tr>
+						</thead>
+						<tbody>
+						 
+						 <?php getBasketItemsCustomer();?>
+						
+						</tbody>
+					</table>
 				</div>
+				<h3 style="color:#ffa500;">Total Value: <?php getBasketTotalCost($_SESSION['userId']);?> Credits</h3><br>
+				<form action="" method="post">
+				<p style="float:left;">Add Comments</p>
+				    <textarea type="text" style="color:white;" id="customerQuoteComments" name="customerQuoteComments" placeholder="add comments..."></textarea>
+				    <button class="btn btn-success" type="submit" id="requestQuoteCustomer" name="requestQuoteCustomer" >Request Quote</button>
+				</form>
 			</div>
-			<div id="errorDiv" class="alert alert-danger alert-dismissible" role="alert" style="display:none; font-size:20px;">
-				<div id="errorMessage" style="padding-left:5%;">
-					<!-- error messages are shown here. -->
-				</div>
-			</div>	
-					<h3 style="color:#ffa500;" align="center"> Edit User Profile</h3><br>
-					<form action="" method="post" >
-					
-						<div class="form-fields-agileinfo">
-							<p>Last Name</p>
-							<input type="text" id="editLastName" name="editLastName" value="<?php if(isset($_SESSION['editUserLastName'])){echo $_SESSION['editUserLastName'];}?>" />
-						</div>
-						<div class="form-fields-agileinfo">
-							<p>Role</p>
-							<input type="text" id="editRole" name="editRole" value="<?php if(isset($_SESSION['editUserRole'])){echo $_SESSION['editUserRole'];}?>" />
-						</div>
-						<div class="form-fields-agileinfo">
-							<p>Location</p>
-							<input type="text" id="editLocation" name="editLocation" value="<?php if(isset($_SESSION['editUserLocation'])){echo $_SESSION['editUserLocation'];}?>" />
-						</div>
-						<br>
-						<p>User Type</p>
-						<select class="form-control" id="editUserType" name="editUserType">
-							<option type="text" value="admin" 
-							    <?php if(isset($_SESSION['editUserType']) && $_SESSION['editUserType']=="admin"){echo "Selected";}?> 
-							>Admin</option>
-							<option type="text" value="customer"  
-							    <?php if(isset($_SESSION['editUserType']) && $_SESSION['editUserType']=="customer"){echo "Selected";}?>
-							>Customer</option>
-						</select>
-						<input type="submit" value="Update" name="Update">
-					</form>
-			</div>
+			<!-- table 1-->
 			<br><br><br>
 			
 	</div>
@@ -151,16 +138,29 @@ Smartphone Compatible web template, free webdesigns for Nokia, Samsung, LG, Sony
 	
 	<!--//Slider-->
 	<!--//Header-->
+<script>
+
+$(document).ready(function(){
+    $('#example1').DataTable();
+});
+$(document).ready(function(){
+    $('#example2').DataTable();
+});
+</script>
 
 <?php
     //including footer HTML
     include( __DIR__ . '/footer.php');
 	
-	// account details update section
-    if(isset($_POST['Update'])){
-		// calling function to update selected user details
-		updateSpecificUserDetails($_SESSION['editUserId']);	
+	// when user clicks on add on remove item button
+	if(isset($_POST['targetItemToRemoveBasket'])){
+		removeItemFromBasket($_POST['targetItemToRemoveBasket']);
 	}
+	
+	// request customer quote
+	if(isset($_POST['requestQuoteCustomer'])){
+		// calling function to store customer quote
+		addCustomerQuote($_SESSION['userId'],$_POST['customerQuoteComments']);
+	}
+	
 ?>	
-				
-			

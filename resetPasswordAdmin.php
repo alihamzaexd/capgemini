@@ -1,5 +1,21 @@
 <?php
 //  Author: Ali Hamza
+session_start();
+
+// redirects users to login page if user is not of type customer
+if($_SESSION['userType'] != 'admin')
+{
+  header("Location: index.php");
+}
+
+// including files with database configuration and function
+require_once(dirname(__FILE__).'/db_connect.php');
+require_once(dirname(__FILE__).'/databaseFunctions.php');
+
+// building database connection
+$connectionClass = new DB_CONNECT();
+$conn  = $connectionClass->connect();
+
 ?>
 
 <!DOCTYPE html>
@@ -73,7 +89,7 @@ Smartphone Compatible web template, free webdesigns for Nokia, Samsung, LG, Sony
 										<li><a href="resetPasswordAdmin.php">Reset Password</a></li>
 									</ul>
 								</li>
-								<li><a href="contact.html" data-hover="Contact">Logout</a></li>
+								<li><a href="logout.php" data-hover="Contact">Logout</a></li>
 							</ul>
 						</nav>
 					</div>
@@ -85,17 +101,27 @@ Smartphone Compatible web template, free webdesigns for Nokia, Samsung, LG, Sony
 		 <br> <br> <br>
 		    <!--footer-->
 	        <div class="contact-middle" style="background:rgba(0, 0, 0, 0.8); max-width:50%;">
+			<div id="successDiv" class="alert alert-success alert-dismissible" role="alert" style="display:none; font-size:20px; " >
+				<div id="successMessage" >
+					<!-- success messages are shown here. -->
+				</div>
+			</div>
+			<div id="errorDiv" class="alert alert-danger alert-dismissible" role="alert" style="display:none; font-size:20px;">
+				<div id="errorMessage" style="padding-left:5%;">
+					<!-- error messages are shown here. -->
+				</div>
+			</div>	
 					<h3 style="color:#ffa500;" align="center"> Reset Password</h3><br>
-					<form action="#" method="post" >
+					<form action="" method="post" >
 						<div class="form-fields-agileinfo">
 							<p>New Password</p>
-							<input type="password" id="password" value="" />
+							<input type="password" name="password" id="password"  required="required"/>
 						</div>
 						<div class="form-fields-agileinfo">
 							<p>Confirm Password</p>
-							<input type="password" id="confirmPassword" value="" />
+							<input type="password" name="confirmPassword" id="confirmPassword"  required="required"/>
 						</div>
-						<input type="submit" value="Update">
+						<input type="submit" name="Update" value="Update">
 					</form>
 			</div>
 			<br><br><br>
@@ -109,6 +135,12 @@ Smartphone Compatible web template, free webdesigns for Nokia, Samsung, LG, Sony
 <?php
     //including footer HTML
     include( __DIR__ . '/footer.php');
+	
+	// account password reset section
+    if(isset($_POST['Update'])){
+		// calling function to update logged in user password
+		resetPassword();	
+	}
 ?>	
 				
 			

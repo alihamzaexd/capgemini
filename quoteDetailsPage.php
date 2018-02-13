@@ -2,9 +2,8 @@
 //  Author: Ali Hamza
 session_start();
 
-$_SESSION['updateTargetUserId']=null;
 // redirects users to login page if user is not of type customer
-if($_SESSION['userType'] != 'admin')
+if(!isset($_SESSION['userType']))
 {
   header("Location: index.php");
 }
@@ -17,10 +16,20 @@ require_once(dirname(__FILE__).'/databaseFunctions.php');
 $connectionClass = new DB_CONNECT();
 $conn  = $connectionClass->connect();
 
-// get details of the user to be edited
-if(isset($_POST['updateTargetUserId'])){
-	getSpecificUserDetails($_POST['updateTargetUserId']);
+// getting user personal information to be used in this page
+getUserPersonalDetails();
+// if posted first time
+if(!isset($_SESSION['targetQuoteForDetail'])){
+	$_SESSION['targetQuoteForDetail'] = $_POST['targetQuoteForDetail'];
+}else{ // if page is being reloaded
+	if(isset($_POST['targetQuoteForDetail'])){
+		// if new Id is posted on this load
+		if($_SESSION['targetQuoteForDetail'] != $_POST['targetQuoteForDetail']){
+			$_SESSION['targetQuoteForDetail'] = $_POST['targetQuoteForDetail'];
+		}
+	}	
 }
+
 ?>
 
 <!DOCTYPE html>
@@ -30,7 +39,7 @@ if(isset($_POST['updateTargetUserId'])){
     <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
 	<script src="https://cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js"></script>
 
-	<title>Edit profile</title>
+	<title>Quote Details</title>
 	<!-- Meta-tags -->
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -83,10 +92,10 @@ Smartphone Compatible web template, free webdesigns for Nokia, Samsung, LG, Sony
 					<div class="collapse navbar-collapse nav-wil" id="bs-example-navbar-collapse-1">
 						<nav class="cl-effect-1" id="cl-effect-1">
 							<ul class="nav navbar-nav">
-								<li><a href="admin.php" data-hover="Home">Home</a></li>
+								<li class="active"><a href="admin.php" data-hover="Home">Home</a></li>
 								<li ><a href="editCatalogAdmin.php" data-hover="Home">Catalogue</a></li>
 								<li ><a href="manageUsers.php" data-hover="Home">Manage Users</a></li>
-								<li class="dropdown menu__item active">
+								<li class="dropdown menu__item">
 									<a href="#" class="dropdown-toggle menu__link active" data-toggle="dropdown" data-hover="Pages" role="button" aria-haspopup="true"
 									    aria-expanded="false">Account<span class="caret"></span></a>
 									<ul class="dropdown-menu">
@@ -102,65 +111,85 @@ Smartphone Compatible web template, free webdesigns for Nokia, Samsung, LG, Sony
 				</nav>
 			</div>
 		</div>
-		<div class="container" style="margin-left:30%">
+		<div class="container">
 		 <br> <br> <br>
-		    <!--footer-->
-	        <div class="contact-middle" style="background:rgba(0, 0, 0, 0.8); max-width:50%;">
-			<div id="successDiv" class="alert alert-success alert-dismissible" role="alert" style="display:none; font-size:20px; " >
-				<div id="successMessage" >
-					<!-- success messages are shown here. -->
+	        <div class="contact-middle" style="background:rgba(0, 0, 0, 0.8);">
+	 
+				<h3 style="color:#ffa500;">Quote: </h3><p style="margin-left:7%"><?php if(isset($_SESSION['targetQuoteForDetail'])){echo $_SESSION['targetQuoteForDetail'];}?></p>
+				<h3 style="color:#ffa500;">Status: </h3>
+				<p style="margin-left:7%">
+				<?php
+				    // getting quoted status
+					if(isset($_SESSION['targetQuoteForDetail'])){
+						$sql = "SELECT status from QUOTES where quote_id = '{$_SESSION['targetQuoteForDetail']}';";
+						$ret = pg_query($conn, $sql);
+						if($ret){
+							$row = pg_fetch_row($ret);
+							echo $row[0];
+						}
+					}
+				?>
+				</p>
+				<hr>
+				<div class="table-responsive">
+					<table class="table" id="example1" style="color:white; !important">
+						<thead>
+						  <tr>
+							<th><p>Title</p></th>
+							<th><p>Description</p></th>
+							<th><p>Value</p></th>
+							<th><p>Type</p></th>
+							<th><p>Total Cost</p></th>
+						  </tr>
+						</thead>
+						<tbody>
+						  <?php getQuoteItems($_SESSION['targetQuoteForDetail']); ?>
+						</tbody>
+					</table>
 				</div>
+				<hr>
+				<h3 style="color:#ffa500;" align="right">Total Cost: <?php
+				    // getting quoted status
+					if(isset($_SESSION['targetQuoteForDetail'])){
+						$sql = "SELECT total_cost from QUOTES where quote_id = '{$_SESSION['targetQuoteForDetail']}';";
+						$ret = pg_query($conn, $sql);
+						if($ret){
+							$row = pg_fetch_row($ret);
+							echo $row[0]." Credits";
+						}
+					}
+				?> </h3>
+				<p>Admin Comments</p>
+				<textarea name="adminComments" disabled><?php if(isset($_SESSION['targetQuoteForDetail'])){
+					$sql = "SELECT admin_comments from QUOTES where quote_id = '{$_SESSION['targetQuoteForDetail']}';";
+					$ret = pg_query($conn, $sql);
+					if($ret){
+						$row = pg_fetch_row($ret);
+						echo $row[0];
+					}
+				}
+				?>
+				</textarea>
 			</div>
-			<div id="errorDiv" class="alert alert-danger alert-dismissible" role="alert" style="display:none; font-size:20px;">
-				<div id="errorMessage" style="padding-left:5%;">
-					<!-- error messages are shown here. -->
-				</div>
-			</div>	
-					<h3 style="color:#ffa500;" align="center"> Edit User Profile</h3><br>
-					<form action="" method="post" >
-					
-						<div class="form-fields-agileinfo">
-							<p>Last Name</p>
-							<input type="text" id="editLastName" name="editLastName" value="<?php if(isset($_SESSION['editUserLastName'])){echo $_SESSION['editUserLastName'];}?>" />
-						</div>
-						<div class="form-fields-agileinfo">
-							<p>Role</p>
-							<input type="text" id="editRole" name="editRole" value="<?php if(isset($_SESSION['editUserRole'])){echo $_SESSION['editUserRole'];}?>" />
-						</div>
-						<div class="form-fields-agileinfo">
-							<p>Location</p>
-							<input type="text" id="editLocation" name="editLocation" value="<?php if(isset($_SESSION['editUserLocation'])){echo $_SESSION['editUserLocation'];}?>" />
-						</div>
-						<br>
-						<p>User Type</p>
-						<select class="form-control" id="editUserType" name="editUserType">
-							<option type="text" value="admin" 
-							    <?php if(isset($_SESSION['editUserType']) && $_SESSION['editUserType']=="admin"){echo "Selected";}?> 
-							>Admin</option>
-							<option type="text" value="customer"  
-							    <?php if(isset($_SESSION['editUserType']) && $_SESSION['editUserType']=="customer"){echo "Selected";}?>
-							>Customer</option>
-						</select>
-						<input type="submit" value="Update" name="Update">
-					</form>
-			</div>
-			<br><br><br>
+			<!-- table 1-->
+			<br><br>
 			
+	    </div>
 	</div>
 
 	
 	<!--//Slider-->
 	<!--//Header-->
+<script>
+$(document).ready(function(){
+    $('#example1').DataTable();
+});
+$(document).ready(function(){
+    $('#example2').DataTable();
+});
+</script>
 
 <?php
     //including footer HTML
     include( __DIR__ . '/footer.php');
-	
-	// account details update section
-    if(isset($_POST['Update'])){
-		// calling function to update selected user details
-		updateSpecificUserDetails($_SESSION['editUserId']);	
-	}
 ?>	
-				
-			
